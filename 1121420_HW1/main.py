@@ -14,4 +14,4 @@ print(f"Word count of 'Hello world': {string_process.word_count('Hello world')}"
 
 print(f"Reverse of 'Python': {string_process.reverse_text('Python')}")
 
-print(f"Is '{text}' a palindrome?: {string_process.is_palindrome(text)}")
+print(f"Is '{text}' a palindrome ?: {string_process.is_palindrome(text)}")
