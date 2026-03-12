@@ -13,16 +13,16 @@ def has_number(password):
     return False
 
 def is_long_enough(password):
-    # 檢查長度是否達到 8 個字元 
+    # Check if the length reaches 8 characters. 
     return len(password) >= 8
 
 def check_password(password):
-    # 綜合呼叫以上三個函數 
+    # Combine the results of the above three functions
     cond1 = has_uppercase(password)
     cond2 = has_number(password)
     cond3 = is_long_enough(password)
     
-    # 必須同時滿足所有條件
+    # All conditions must be met
     if cond1 and cond2 and cond3:
         return "password is valid"
     else:
