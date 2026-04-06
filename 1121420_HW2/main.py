@@ -3,7 +3,7 @@ import team_scraper
 
 if __name__ == "__main__":
     # 設定要抓取的年份範圍
-    target_years = [2022, 2023]
+    target_years = range(2003, 2024)
     
     print("========================================")
     print("   MLB Historical Data Web Scraper 啟動   ")
@@ -17,9 +17,6 @@ if __name__ == "__main__":
     print("\n----------------------------------------\n")
     
     # 執行模組 2: 球隊資料爬取
-    #print(">>> 啟動球隊資料爬取模組...")
-    #team_scraper.run(target_years)
-    
-    print("\n========================================")
+    print(">>> 啟動球隊資料爬取模組...")
+    team_scraper.run(target_years)
     print("   所有爬蟲任務執行完畢！檔案已順利匯出。   ")
-    print("========================================")
