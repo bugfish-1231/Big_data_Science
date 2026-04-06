@@ -9,10 +9,8 @@ from selenium.common.exceptions import TimeoutException
 import utils
 
 def scrape_team_single_page(driver, year, stat_type, tab):
-    """處理球隊特有的單頁面抓取邏輯 (無須翻頁)"""
     print(f"    -> 準備抓取球隊 {tab} 表格 (年份: {year})...")
-    
-    # ⚾ 配合 MLB 最新網站架構，更改球隊的網址生成邏輯
+
     if stat_type == "hitting":
         # 球隊打擊網址結構：https://www.mlb.com/stats/team/2022
         base_url = f"https://www.mlb.com/stats/team/{year}" 
@@ -49,11 +47,10 @@ def scrape_team_single_page(driver, year, stat_type, tab):
 
 
 def clean_team_df(df, is_expanded=False):
-    """🌟 專門用來清洗球隊髒資料的函式"""
     if df.empty:
         return df
     
-    # 1. 清洗標題 (Headers)
+    # 1. Clean Headers
     df.columns = df.columns.str.replace('caret-upcaret-down ', '', regex=False)
     df.columns = df.columns.str.replace('caret-upcaret-down', '', regex=False)
     df.columns = df.columns.str.replace('TEAMTEAM', 'TEAM', regex=False)
@@ -66,7 +63,7 @@ def clean_team_df(df, is_expanded=False):
             cleaned_cols.append(col)
     df.columns = cleaned_cols
     
-    # 2. 清洗球隊名稱並拆分出 RANK
+    # 2. RANK
     if 'TEAM' in df.columns:
         def parse_team(raw_name):
             if not isinstance(raw_name, str):
@@ -75,13 +72,12 @@ def clean_team_df(df, is_expanded=False):
             rank = ""
             cleaned_name = raw_name
             
-            # A. 抓取開頭的排名 (RANK)
+            # A. (RANK)
             rank_match = re.match(r'^(\d+)', cleaned_name)
             if rank_match:
                 rank = rank_match.group(1)
                 cleaned_name = cleaned_name[len(rank):]
                 
-            # B. 🌟 核心修正：清除字尾的數字、空白與亂碼方框
             # \d+ 代表數字, \s+ 代表空白, [\u200b-\u200f\ufeff]+ 代表隱藏的排版字元或亂碼方框
             # $ 代表只針對字串的「最後面」進行清除，不會誤砍球隊名字中間的字
             cleaned_name = re.sub(r'(\d+|[\u200b-\u200f\ufeff]+|\s+)+$', '', cleaned_name)
@@ -95,7 +91,6 @@ def clean_team_df(df, is_expanded=False):
         df = df.drop(columns=['TEAM'])
         df = df.rename(columns={'TEAM_CLEAN': 'TEAM'})
         
-        # ====== 🌟 排版與防呆設計 ======
         if is_expanded:
             # Expanded 表格不需要保留 RANK，避免合併後出現重複
             df = df.drop(columns=['RANK'], errors='ignore')
@@ -111,7 +106,6 @@ def clean_team_df(df, is_expanded=False):
 
 
 def run(years):
-    """執行球隊資料的爬取與合併"""
     driver = utils.init_driver()
     tasks = ["hitting", "pitching"]
 
@@ -156,6 +150,6 @@ def run(years):
 
             if final_data:
                 pd.concat(final_data, ignore_index=True).to_csv(out_file, index=False, encoding='utf-8-sig')
-                print(f"★★★ 已產出乾淨完美的檔案: {out_file} ★★★")
+                print(f" 已產出乾淨完美的檔案: {out_file} ")
     finally:
         driver.quit()

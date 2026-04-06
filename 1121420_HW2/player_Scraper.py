@@ -9,7 +9,7 @@ from selenium.common.exceptions import TimeoutException, NoSuchElementException
 import utils
 
 def scrape_player_pages(driver, year, stat_type, tab):
-    """處理球員特有的多頁面抓取邏輯"""
+
     print(f"    -> 準備抓取球員 {tab} 表格 (年份: {year})...")
     
     if stat_type == "hitting":
@@ -22,7 +22,6 @@ def scrape_player_pages(driver, year, stat_type, tab):
     # 前往正確的網址
     driver.get(base_url)
     
-    # 緩衝 3 秒，確保網頁真的載入該年份，並且沒有被亂跳轉
     time.sleep(3) 
 
     wait = WebDriverWait(driver, 15)
@@ -31,7 +30,7 @@ def scrape_player_pages(driver, year, stat_type, tab):
         if tab.lower() == "expanded":
             expanded_tab = wait.until(EC.element_to_be_clickable((By.CSS_SELECTOR, "button[aria-label='Expanded']")))
             driver.execute_script("arguments[0].click();", expanded_tab)
-            time.sleep(3) # 等待表格切換動畫
+            time.sleep(3) 
             
     except TimeoutException:
         print(f"      [警告] 找不到 {tab} 標籤。請確認畫面是否卡住。")
@@ -64,11 +63,10 @@ def scrape_player_pages(driver, year, stat_type, tab):
     return pd.concat(all_pages_data, ignore_index=True) if all_pages_data else pd.DataFrame()
 
 def clean_mlb_df(df, is_expanded=False):
-    """🌟 專門用來清洗 MLB 髒資料與拆分特徵的超強函式"""
     if df.empty:
         return df
     
-    # 1. 清洗標題 (Headers)
+    # Clean Headers
     df.columns = df.columns.str.replace('caret-upcaret-down ', '', regex=False)
     df.columns = df.columns.str.replace('caret-upcaret-down', '', regex=False)
     df.columns = df.columns.str.replace('TEAMTEAM', 'TEAM', regex=False)
@@ -80,8 +78,7 @@ def clean_mlb_df(df, is_expanded=False):
         else:
             cleaned_cols.append(col)
     df.columns = cleaned_cols
-    
-    # 2. 清洗球員名稱並拆分出 RANK 與 POSITION
+
     if 'PLAYER' in df.columns:
         def parse_player(raw_name):
             if not isinstance(raw_name, str):
@@ -91,13 +88,13 @@ def clean_mlb_df(df, is_expanded=False):
             position = ""
             cleaned_name = raw_name
             
-            # A. 抓取開頭的排名 (RANK)
+            # A. RANK
             rank_match = re.match(r'^(\d+)', cleaned_name)
             if rank_match:
                 rank = rank_match.group(1)
                 cleaned_name = cleaned_name[len(rank):]
                 
-            # B. 移除結尾的多餘數字與不可見字元 (例如結尾的 4 或 811)
+            # B. 移除結尾的多餘數字
             cleaned_name = re.sub(r'\d*[\u200b-\u200f\ufeff\s]*$', '', cleaned_name)
             
             # C. 抓取結尾的守備位置 (POSITION)
@@ -106,7 +103,7 @@ def clean_mlb_df(df, is_expanded=False):
                 position = pos_match.group(1)
                 cleaned_name = cleaned_name[:-len(position)]
                 
-            # D. 清理名字 (抓取完美重複的姓氏，並移除名字後方多出的字母)
+            # D. 清理名字 
             dup_match = re.search(r'(.+?)\1$', cleaned_name)
             if dup_match:
                 last_name = dup_match.group(1).strip()
@@ -124,13 +121,10 @@ def clean_mlb_df(df, is_expanded=False):
         df = df.drop(columns=['PLAYER'])
         df = df.rename(columns={'PLAYER_CLEAN': 'PLAYER'})
         
-        # ====== 🌟 排版與防呆設計 ======
         if is_expanded:
             # 如果是 Expanded 表格，直接把 RANK 跟 POSITION 丟掉，
-            # 這樣合併時就不會產生 RANK_expanded 這種多餘的欄位！
             df = df.drop(columns=['RANK', 'POSITION'], errors='ignore')
         else:
-            # 如果是 Standard 表格，把這三個重要欄位移到資料表的最前面
             cols = df.columns.tolist()
             for c in ['RANK', 'PLAYER', 'POSITION']:
                 if c in cols:
@@ -140,7 +134,6 @@ def clean_mlb_df(df, is_expanded=False):
     return df
 
 def run(years):
-    """執行球員資料的爬取與合併"""
     driver = utils.init_driver()
     tasks = ["hitting", "pitching"]
 
@@ -188,6 +181,6 @@ def run(years):
 
             if final_data:
                 pd.concat(final_data, ignore_index=True).to_csv(out_file, index=False, encoding='utf-8-sig')
-                print(f"★★★ 已產出乾淨完美的檔案: {out_file} ★★★")
+                print(f" 已產出乾淨完美的檔案: {out_file} ")
     finally:
         driver.quit()
