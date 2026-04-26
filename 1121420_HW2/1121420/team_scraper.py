@@ -41,6 +41,7 @@ def scrape_team_single_page(driver, year, stat_type, tab):
     except TimeoutException:
         return pd.DataFrame()
         
+    # 球隊資料只有一頁，抓一次就收工！
     df = utils.extract_table_from_page(driver)
     return df
 
