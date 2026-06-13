@@ -71,7 +71,7 @@ def load_player_pitching():
 def merge_team_data():
     th = load_team_hitting()
     tp = load_team_pitching()
-    merged = pd.merge(tp[['YEAR', 'TEAM', 'win_rate', 'HR']], th[['YEAR', 'TEAM', 'AVG']], on=['YEAR', 'TEAM'])
+    merged = pd.merge(tp[['YEAR', 'TEAM', 'win_rate']], th[['YEAR', 'TEAM', 'AVG', 'HR']], on=['YEAR', 'TEAM'])
     merged['win_rate_bin'] = pd.cut(merged['win_rate'], bins=WIN_RATE_BINS, labels=WIN_RATE_LABELS, right=False)
     return merged
 
