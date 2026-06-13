@@ -45,7 +45,8 @@ def plot_q1_line(df):
 # ─── Q1: Violin Plot ──────────────────────────────────────────────────────────
 
 def plot_q1_violin(df):
-    data = df.dropna(subset=['win_rate_bin', 'AVG'])
+    data = df.dropna(subset=['win_rate_bin', 'AVG']).copy()
+    data['win_rate_bin'] = data['win_rate_bin'].astype(str)
 
     fig, ax = plt.subplots(figsize=(10, 6))
     sns.violinplot(
